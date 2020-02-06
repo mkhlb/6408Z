@@ -241,10 +241,10 @@ void NewPID(double TARGET_VALUEX, double TARGET_VALUEZ, double kP, double kD,
 
       // derivative goes here
 
-      FRDrive.spin(directionType::fwd, minMax(SidePower, maxSpeed), velocityUnits::pct);
-      FLDrive.spin(directionType::fwd, minMax(-SidePower, maxSpeed), velocityUnits::pct);
-      BRDrive.spin(directionType::fwd, minMax(-SidePower, maxSpeed), velocityUnits::pct);
-      BLDrive.spin(directionType::fwd, minMax(SidePower, maxSpeed), velocityUnits::pct);
+      FRDrive.spin(directionType::fwd, minMax(-SidePower, maxSpeed), velocityUnits::pct);
+      FLDrive.spin(directionType::fwd, minMax(SidePower, maxSpeed), velocityUnits::pct);
+      BRDrive.spin(directionType::fwd, minMax(SidePower, maxSpeed), velocityUnits::pct);
+      BLDrive.spin(directionType::fwd, minMax(-SidePower, maxSpeed), velocityUnits::pct);
 
       task::sleep(25);
     }
@@ -291,10 +291,10 @@ void autonomous(void) {
   IntakeOne.spin(directionType::rev, 100, velocityUnits::pct);
   IntakeTwo.spin(directionType::rev, 100, velocityUnits::pct);
 
-  FRDrive.spinFor(0.5, rotationUnits::rev, 90, velocityUnits::pct, false);
-  BRDrive.spinFor(0.5, rotationUnits::rev, 90, velocityUnits::pct, false);
-  FLDrive.spinFor(0.5, rotationUnits::rev, 90, velocityUnits::pct, false);
-  BLDrive.spinFor(0.5, rotationUnits::rev, 90, velocityUnits::pct, true);
+  FRDrive.spinFor(0.6, rotationUnits::rev, 90, velocityUnits::pct, false);
+  BRDrive.spinFor(0.6, rotationUnits::rev, 90, velocityUnits::pct, false);
+  FLDrive.spinFor(0.6, rotationUnits::rev, 90, velocityUnits::pct, false);
+  BLDrive.spinFor(0.6, rotationUnits::rev, 90, velocityUnits::pct, true);
 
   FRDrive.spinFor(-0.1, rotationUnits::rev, 70, velocityUnits::pct, false);
   BRDrive.spinFor(-0.1, rotationUnits::rev, 70, velocityUnits::pct, false);
@@ -313,19 +313,19 @@ void autonomous(void) {
   IntakeOne.stop();
   IntakeTwo.stop();
 
-  ArmL.startSpinFor(directionType::rev, 0.86, rotationUnits::rev, 80, velocityUnits::pct);
-  ArmR.startSpinFor(directionType::rev, 0.86, rotationUnits::rev, 80, velocityUnits::pct);
+  ArmL.startSpinFor(directionType::rev, 0.7, rotationUnits::rev, 80, velocityUnits::pct);
+  ArmR.startSpinFor(directionType::rev, 0.7, rotationUnits::rev, 80, velocityUnits::pct);
 
-  task::sleep(220);
+  task::sleep(100);
 
-  NewPID(0, 65, 2.8, -0.6, 3.5, 58);
-  NewPID(94, 76.5, 2.3, 0, 1, 30);
+  NewPID(0, 65, 2.8, -0.6, 4, 58);
+  NewPID(92, 77.5, 2.4, 0, 1, 40);
 
   IntakeOne.spin(directionType::rev, 100, velocityUnits::pct);
   IntakeTwo.spin(directionType::rev, 100, velocityUnits::pct);
 
-  ArmL.startSpinFor(directionType::fwd, 0.92, rotationUnits::rev, 15, velocityUnits::pct);
-  ArmR.spinFor(directionType::fwd, 0.92, rotationUnits::rev, 15, velocityUnits::pct);
+  ArmL.startSpinFor(directionType::fwd, 0.75, rotationUnits::rev, 15, velocityUnits::pct);
+  ArmR.spinFor(directionType::fwd, 0.75, rotationUnits::rev, 15, velocityUnits::pct);
 
   task::sleep(150);
 
@@ -342,17 +342,17 @@ void autonomous(void) {
 
   task::sleep(350);
 
-  FRDrive.spinFor(-7.7, rotationUnits::rev, 100, velocityUnits::pct, false);
-  BRDrive.spinFor(3, rotationUnits::rev, 50, velocityUnits::pct, false);
-  FLDrive.spinFor(3, rotationUnits::rev, 50, velocityUnits::pct, false);
-  BLDrive.spinFor(-7.7, rotationUnits::rev, 100, velocityUnits::pct, true);
+  FRDrive.spinFor(-3, rotationUnits::rev, 100, velocityUnits::pct, false);
+  BRDrive.spinFor(8, rotationUnits::rev, 50, velocityUnits::pct, false);
+  FLDrive.spinFor(8, rotationUnits::rev, 50, velocityUnits::pct, false);
+  BLDrive.spinFor(-3, rotationUnits::rev, 100, velocityUnits::pct, true);
 
   task::sleep(100);
 
-  FRDrive.spinFor(2.33, rotationUnits::rev, 100, velocityUnits::pct, false);
-  BRDrive.spinFor(2.33, rotationUnits::rev, 100, velocityUnits::pct, false);
-  FLDrive.spinFor(2.33, rotationUnits::rev, 100, velocityUnits::pct, false);
-  BLDrive.spinFor(2.33, rotationUnits::rev, 100, velocityUnits::pct, true);
+  FRDrive.spinFor(2.7, rotationUnits::rev, 100, velocityUnits::pct, false);
+  BRDrive.spinFor(2.7, rotationUnits::rev, 100, velocityUnits::pct, false);
+  FLDrive.spinFor(2.7, rotationUnits::rev, 100, velocityUnits::pct, false);
+  BLDrive.spinFor(2.7, rotationUnits::rev, 100, velocityUnits::pct, true);
 
   task::sleep(200);
  
@@ -366,11 +366,6 @@ void autonomous(void) {
 
   IntakeOne.stop();
   IntakeTwo.stop();
-
-  FRDrive.spinFor(-0.4, rotationUnits::rev, 40, velocityUnits::pct, false);
-  BRDrive.spinFor(-0.4, rotationUnits::rev, 40, velocityUnits::pct, false);
-  FLDrive.spinFor(-0.4, rotationUnits::rev, 40, velocityUnits::pct, false);
-  BLDrive.spinFor(-0.4, rotationUnits::rev, 40, velocityUnits::pct, true);
 
 
  
