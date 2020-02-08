@@ -32,13 +32,13 @@ controller PuppetMaster;
 motor FRDrive(PORT2, gearSetting::ratio18_1, true);
 motor FLDrive(PORT6, gearSetting::ratio18_1, false);
 motor BRDrive(PORT11, gearSetting::ratio18_1, true);
-motor BLDrive(PORT5, gearSetting::ratio18_1, false);
+motor BLDrive(PORT16, gearSetting::ratio18_1, false);
 
 motor ArmR(PORT3, gearSetting::ratio36_1, true);
 motor ArmL(PORT7, gearSetting::ratio36_1, false);
 
 motor IntakeOne(PORT13, gearSetting::ratio18_1, true); // right
-motor IntakeTwo(PORT4, gearSetting::ratio18_1, false);
+motor IntakeTwo(PORT14, gearSetting::ratio18_1, false);
 
 // sonar RulerL = sonar(Brain.ThreeWirePort.A); this will break the code, gives
 // memory permission error
@@ -258,123 +258,14 @@ void NewPID(double TARGET_VALUEX, double TARGET_VALUEZ, double kP, double kD,
 
 void autonomous(void) {
   // ..........................................................................
-  // Insert autonomous user ode here.
-  int direction = 1; //-1 for left
+  FRDrive.spinFor(directionType::fwd, 2.31, rotationUnits::rev, 70, velocityUnits::pct, false);
+  BRDrive.spinFor(directionType::fwd, 2.31, rotationUnits::rev, 70, velocityUnits::pct, false);
+  FLDrive.spinFor(directionType::fwd, 2.31, rotationUnits::rev, 70, velocityUnits::pct, false);
+  BLDrive.spinFor(directionType::fwd, 2.31, rotationUnits::rev, 70, velocityUnits::pct, true);
 
-  /*ArmL.spinFor(-0.1,rotationUnits::rev, 50, velocityUnits::pct,false);
-  ArmR.spinFor(-0.1,rotationUnits::rev, 50, velocityUnits::pct,true);*/
-
-  /*FRDrive.spinFor(1,rotationUnits::rev, 100, velocityUnits::pct,false);
-  BRDrive.spinFor(1,rotationUnits::rev, 100, velocityUnits::pct,false);
-  FLDrive.spinFor(1,rotationUnits::rev, 100, velocityUnits::pct,false);
-  BLDrive.spinFor(1,rotationUnits::rev, 100, velocityUnits::pct,true);*/
-
-  /*IntakeOne.stop();
-  IntakeTwo.stop();*/
-
-  float FIRST_POINT = 18;
-
-  /*ArmL.startSpinFor(directionType::fwd, 1, rotationUnits::rev);
-  ArmR.startSpinFor(directionType::fwd, 1, rotationUnits::rev); */
-
-  FRDrive.setStopping(brakeType::coast);
-  BRDrive.setStopping(brakeType::coast);
-  FLDrive.setStopping(brakeType::coast);
-  BLDrive.setStopping(brakeType::coast);
-
-  IntakeOne.setStopping(brakeType::hold);
-  IntakeTwo.setStopping(brakeType::hold);
-
-  ArmR.setStopping(brakeType::hold);
-  ArmL.setStopping(brakeType::hold);
-
-  IntakeOne.spin(directionType::rev, 100, velocityUnits::pct);
-  IntakeTwo.spin(directionType::rev, 100, velocityUnits::pct);
-
-  FRDrive.spinFor(0.6, rotationUnits::rev, 90, velocityUnits::pct, false);
-  BRDrive.spinFor(0.6, rotationUnits::rev, 90, velocityUnits::pct, false);
-  FLDrive.spinFor(0.6, rotationUnits::rev, 90, velocityUnits::pct, false);
-  BLDrive.spinFor(0.6, rotationUnits::rev, 90, velocityUnits::pct, true);
-
-  FRDrive.spinFor(-0.1, rotationUnits::rev, 70, velocityUnits::pct, false);
-  BRDrive.spinFor(-0.1, rotationUnits::rev, 70, velocityUnits::pct, false);
-  FLDrive.spinFor(-0.1, rotationUnits::rev, 70, velocityUnits::pct, false);
-  BLDrive.spinFor(-0.1, rotationUnits::rev, 70, velocityUnits::pct, true);
-
-
-  // flips out intake
-  PuppetMaster.Screen.print("start lmao");
-
-  
-
-  NewPID(0, 16, 2.96, 0.648, 0.8, 100);
-  task::sleep(220);
-
-  IntakeOne.stop();
-  IntakeTwo.stop();
-
-  ArmL.startSpinFor(directionType::rev, 0.87, rotationUnits::rev, 80, velocityUnits::pct);
-  ArmR.startSpinFor(directionType::rev, 0.87, rotationUnits::rev, 80, velocityUnits::pct);
-
-  task::sleep(100);
-
-  NewPID(0, 65, 2.8, -0.6, 4.5, 58);
-  NewPID(93, 77, 2.35, -0.3, 1.2, 40);
-
-  IntakeOne.spin(directionType::rev, 100, velocityUnits::pct);
-  IntakeTwo.spin(directionType::rev, 100, velocityUnits::pct);
-
-  ArmL.startSpinFor(directionType::fwd, 0.92, rotationUnits::rev, 15, velocityUnits::pct);
-  ArmR.spinFor(directionType::fwd, 0.92, rotationUnits::rev, 15, velocityUnits::pct);
-
-  task::sleep(150);
-
-  IntakeOne.stop();
-  IntakeTwo.stop();
-
-  ArmL.startSpinFor(directionType::rev, 0.2, rotationUnits::rev, 60, velocityUnits::pct);
-  ArmR.startSpinFor(directionType::rev, 0.2, rotationUnits::rev, 60, velocityUnits::pct);
-
-  FRDrive.spinFor(1, rotationUnits::rev, 80, velocityUnits::pct, false);
-  BRDrive.spinFor(1, rotationUnits::rev, 80, velocityUnits::pct, false);
-  FLDrive.spinFor(-1, rotationUnits::rev, 80, velocityUnits::pct, false);
-  BLDrive.spinFor(-1, rotationUnits::rev, 80, velocityUnits::pct, true);
-
-  task::sleep(350);
-
-  FRDrive.spinFor(6.85, rotationUnits::rev, 100, velocityUnits::pct, false);
-  BRDrive.spinFor(-2.6, rotationUnits::rev, 30, velocityUnits::pct, false);
-  FLDrive.spinFor(-2.6, rotationUnits::rev, 30, velocityUnits::pct, false);
-  BLDrive.spinFor(6.85, rotationUnits::rev, 100, velocityUnits::pct, true);
-
-
-
-  FRDrive.spinFor(1.85, rotationUnits::rev, 100, velocityUnits::pct, false);
-  BRDrive.spinFor(1.85, rotationUnits::rev, 100, velocityUnits::pct, false);
-  FLDrive.spinFor(1.85, rotationUnits::rev, 100, velocityUnits::pct, false);
-  BLDrive.spinFor(1.85, rotationUnits::rev, 100, velocityUnits::pct, true);
-
-  task::sleep(400);
- 
-  IntakeOne.spin(directionType::fwd, 100, velocityUnits::pct);
-  IntakeTwo.spin(directionType::fwd, 100, velocityUnits::pct);
-
-  task::sleep(300);
-
-  ArmL.startSpinFor(directionType::rev, 1, rotationUnits::rev, 30, velocityUnits::pct);
-  ArmR.spinFor(directionType::rev, 1, rotationUnits::rev, 30, velocityUnits::pct);
-
-  IntakeOne.stop();
-  IntakeTwo.stop();
-
-
- 
-
-  PuppetMaster.Screen.clearLine();
-  PuppetMaster.Screen.print("end");
-
-
-
+  PuppetMaster.Screen.print(RulerL.distance(distanceUnits::cm));
+  //64.5 CM ON NORMAL MATS FOR 2 REVS
+  //55 CM ON WORKROOM FLOOR FOR 2 REVS
   // ..........................................................................
 }
 
