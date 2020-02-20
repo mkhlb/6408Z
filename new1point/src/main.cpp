@@ -38,7 +38,7 @@ motor ArmR(PORT3, gearSetting::ratio36_1, true);
 motor ArmL(PORT7, gearSetting::ratio36_1, false);
 
 motor IntakeOne(PORT13, gearSetting::ratio18_1, true); // right
-motor IntakeTwo(PORT4, gearSetting::ratio18_1, false);
+motor IntakeTwo(PORT8, gearSetting::ratio18_1, false);
 
 // sonar RulerL = sonar(Brain.ThreeWirePort.A); this will break the code, gives
 // memory permission error
@@ -241,6 +241,8 @@ void NewPID(double TARGET_VALUEX, double TARGET_VALUEZ, double kP, double kD,
 
       // derivative goes here
 
+      
+
       FRDrive.spin(directionType::fwd, minMax(SidePower, maxSpeed), velocityUnits::pct);
       FLDrive.spin(directionType::fwd, minMax(-SidePower, maxSpeed), velocityUnits::pct);
       BRDrive.spin(directionType::fwd, minMax(-SidePower, maxSpeed), velocityUnits::pct);
@@ -307,7 +309,7 @@ void autonomous(void) {
 
   
 
-  NewPID(0, 16, 2.96, 0.648, 0.8, 100);
+  NewPID(0, 15.5, 2.96, 0.648, 0.8, 100);
   task::sleep(220);
 
   IntakeOne.stop();
@@ -319,7 +321,7 @@ void autonomous(void) {
   task::sleep(100);
 
   NewPID(0, 65, 2.8, -0.6, 4.5, 58);
-  NewPID(93, 77, 2.35, -0.3, 1.2, 40);
+  NewPID(94, 76.5, 2.35, -0.3, 1.2, 40);
 
   IntakeOne.spin(directionType::rev, 100, velocityUnits::pct);
   IntakeTwo.spin(directionType::rev, 100, velocityUnits::pct);
@@ -349,10 +351,10 @@ void autonomous(void) {
 
 
 
-  FRDrive.spinFor(1.85, rotationUnits::rev, 100, velocityUnits::pct, false);
-  BRDrive.spinFor(1.85, rotationUnits::rev, 100, velocityUnits::pct, false);
-  FLDrive.spinFor(1.85, rotationUnits::rev, 100, velocityUnits::pct, false);
-  BLDrive.spinFor(1.85, rotationUnits::rev, 100, velocityUnits::pct, true);
+  FRDrive.spinFor(1.2, rotationUnits::rev, 100, velocityUnits::pct, false);
+  BRDrive.spinFor(1.2, rotationUnits::rev, 100, velocityUnits::pct, false);
+  FLDrive.spinFor(1.2, rotationUnits::rev, 100, velocityUnits::pct, false);
+  BLDrive.spinFor(1.2, rotationUnits::rev, 100, velocityUnits::pct, true);
 
   task::sleep(400);
  
@@ -442,26 +444,26 @@ void usercontrol(void) {
                                              PuppetMaster.Axis4.value() +
                                              PuppetMaster.Axis1.value(),
                                          127) +
-                             127] +
+                             127] * 0.85 +
                  preciseSpeedX + preciseSpeedY;
     FRVelocity = sigmoid_map[(int)minMax(PuppetMaster.Axis3.value() -
                                              PuppetMaster.Axis4.value() -
                                              PuppetMaster.Axis1.value(),
                                          127) +
-                             127] -
+                             127] * 0.85 -
                  preciseSpeedX + preciseSpeedY;
 
     BRVelocity = sigmoid_map[(int)minMax(PuppetMaster.Axis3.value() +
                                              PuppetMaster.Axis4.value() -
                                              PuppetMaster.Axis1.value(),
                                          127) +
-                             127] +
+                             127] * 0.85 +
                  preciseSpeedX + preciseSpeedY;
     BLVelocity = sigmoid_map[(int)minMax(PuppetMaster.Axis3.value() -
                                              PuppetMaster.Axis4.value() +
                                              PuppetMaster.Axis1.value(),
                                          127) +
-                             127] -
+                             127] * 0.85 -
                  preciseSpeedX + preciseSpeedY;
 
     FRDrive.spin(directionType::fwd, FRVelocity, velocityUnits::pct);
