@@ -1,3 +1,27 @@
+// ---- START VEXCODE CONFIGURED DEVICES ----
+// Robot Configuration:
+// [Name]               [Type]        [Port(s)]
+// RulerY               sonar         A, B            
+// RulerF               sonar         C, D            
+// RulerS               sonar         G, H            
+// Inertial2            inertial      16              
+// ---- END VEXCODE CONFIGURED DEVICES ----
+// ---- START VEXCODE CONFIGURED DEVICES ----
+// Robot Configuration:
+// [Name]               [Type]        [Port(s)]
+// RulerY               sonar         A, B            
+// RulerR               sonar         C, D            
+// RulerS               sonar         G, H            
+// Inertial2            inertial      16              
+// ---- END VEXCODE CONFIGURED DEVICES ----
+// ---- START VEXCODE CONFIGURED DEVICES ----
+// Robot Configuration:
+// [Name]               [Type]        [Port(s)]
+// RulerL               sonar         A, B            
+// RulerR               sonar         C, D            
+// RulerS               sonar         G, H            
+// Inertial2            inertial      16              
+// ---- END VEXCODE CONFIGURED DEVICES ----
 /*----------------------------------------------------------------------------*/
 /*                                                                            */
 /*    Module:       main.cpp                                                  */
@@ -37,7 +61,7 @@ motor BLDrive(PORT5, gearSetting::ratio18_1, false);
 motor ArmR(PORT3, gearSetting::ratio36_1, true);
 motor ArmL(PORT7, gearSetting::ratio36_1, false);
 
-motor IntakeOne(PORT13, gearSetting::ratio18_1, true); // right
+motor IntakeOne(PORT12, gearSetting::ratio18_1, true); // right
 motor IntakeTwo(PORT8, gearSetting::ratio18_1, false);
 
 // sonar RulerL = sonar(Brain.ThreeWirePort.A); this will break the code, gives
@@ -123,139 +147,392 @@ void pre_auton(void) {
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
 
-void NewPID(double TARGET_VALUEX, double TARGET_VALUEZ, double kP, double kD,
-            double closeness, double maxSpeed) {
-  // initialize PrevError only once
-  double PrevLeftError = 0;
-  double PrevRightError = 0;
-  double PrevSideError = 0;
+  void PIDTurn(double TARGET_ROTATION, double kP, double kI, double kD,
+             double ACCEPTABLE_ERROR, int TARGET_TICKS) {
+  double Error = 0;
+  double ClockWiseError = 0;
+  double CounterWiseError = 0;
+  double Integral;
+  int TicksAtTarget = 0;
+  while (TARGET_TICKS > TicksAtTarget) {
+
+    if (TARGET_ROTATION < Inertial2.heading()) {
+      ClockWiseError = 360 - Inertial2.heading() + TARGET_ROTATION;
+      CounterWiseError = Inertial2.heading() - TARGET_ROTATION ;
+    } else {
+      ClockWiseError = TARGET_ROTATION - Inertial2.heading();
+      CounterWiseError = Inertial2.heading() + (360 - TARGET_ROTATION);
+    }
+    
+
+
+    if (ClockWiseError < CounterWiseError) {
+      
+      Error = ClockWiseError;
+      Integral = Integral + Error;
+      if(Error <= 0)
+      {
+        Integral = 0;
+      }
+      FRDrive.spin(directionType::fwd, -(Error * kP + Integral * kI), velocityUnits::pct);
+      FLDrive.spin(directionType::fwd, Error * kP + Integral * kI, velocityUnits::pct);
+      BLDrive.spin(directionType::fwd, Error * kP + Integral * kI, velocityUnits::pct);
+      BRDrive.spin(directionType::fwd, -(Error * kP + Integral * kI), velocityUnits::pct);
+    }
+    else {
+      Error = CounterWiseError;
+      Integral = Integral + Error;
+      if(Error <= 0)
+      {
+        Integral = 0;
+      }
+      FRDrive.spin(directionType::fwd, Error * kP + Integral * kI, velocityUnits::pct);
+      FLDrive.spin(directionType::fwd, -(Error * kP + Integral * kI), velocityUnits::pct);
+      BLDrive.spin(directionType::fwd, -(Error * kP + Integral * kI), velocityUnits::pct);
+      BRDrive.spin(directionType::fwd, Error * kP + Integral * kI, velocityUnits::pct);
+    }
+    if(Inertial2.heading() < TARGET_ROTATION + ACCEPTABLE_ERROR &&
+         Inertial2.heading() > TARGET_ROTATION - ACCEPTABLE_ERROR)
+    {
+      TicksAtTarget++;
+      BRDrive.stop();
+      FRDrive.stop();
+      BLDrive.stop();
+      FLDrive.stop();
+    }
+    else {
+      TicksAtTarget = 0;
+    }
+
+    task::sleep(20);
+
+    
+  }
+  BRDrive.stop();
+  FRDrive.stop();
+  BLDrive.stop();
+  FLDrive.stop();
+  
+}
+
+void PIDDrive(double TARGET_ROTATION, double TARGET_Y, double kZ, double kP, double kI, double kD,
+             double ACCEPTABLE_ERROR, int TARGET_TICKS) {
+  double LeftError = 0;
+  double RightError = 0;
+  double ClockWiseError = 0;
+  double CounterWiseError = 0;
+  double YError = 0;
+  double LeftIntegral = 0;
+  double RightIntegral = 0;
   double LeftDerivative = 0;
   double RightDerivative = 0;
-  double SideDerivative = 0;
-  if (TARGET_VALUEX != 0 && TARGET_VALUEZ != 0) {
-    while (RulerL.distance(distanceUnits::cm) > TARGET_VALUEZ + closeness ||
-           RulerL.distance(distanceUnits::cm) < TARGET_VALUEZ - closeness ||
-           RulerR.distance(distanceUnits::cm) > TARGET_VALUEZ + closeness ||
-           RulerR.distance(distanceUnits::cm) < TARGET_VALUEZ - closeness ||
-           RulerS.distance(distanceUnits::cm) > TARGET_VALUEX + closeness ||
-           RulerS.distance(distanceUnits::cm) < TARGET_VALUEX - closeness) {
-      // proportional component below
-      double LeftPower = 0;
-      double RightPower = 0;
-      double SidePower = 0;
-
-      double LeftError = TARGET_VALUEZ - RulerL.distance(distanceUnits::cm);
-      double RightError = TARGET_VALUEZ - RulerR.distance(distanceUnits::cm);
-      if (PrevLeftError == 0) {
-        LeftDerivative = 0;
-      } else {
-        LeftDerivative = LeftError - PrevLeftError;
-      }
-      PrevLeftError = LeftError;
-
-      if (PrevRightError == 0) {
-        RightDerivative = 0;
-      } else {
-        RightDerivative = RightError - PrevRightError;
-      }
-      PrevRightError = RightError;
-
-      LeftPower = LeftError * kP + RightDerivative * kD;
-      RightPower = RightError * kP + RightDerivative * kD;
-
-      double SideError = TARGET_VALUEX - RulerS.distance(distanceUnits::cm);
-      if (PrevSideError == 0) {
-        SideDerivative = 0;
-      } else {
-        SideDerivative = SideError - PrevSideError;
-      }
-      PrevSideError = SideError;
-      SidePower = SideError * kP + SideDerivative * kD;
-
-      // derivative goes here
-      PuppetMaster.Screen.clearLine();
-      PuppetMaster.Screen.print(SideDerivative * kD);
-      //PuppetMaster.Screen.print(RulerS.distance(distanceUnits::cm));
-      FRDrive.spin(directionType::fwd, minMax(RightPower - SidePower, maxSpeed),
-                   velocityUnits::pct);
-      FLDrive.spin(directionType::fwd, minMax(LeftPower + SidePower, maxSpeed),
-                   velocityUnits::pct);
-      BRDrive.spin(directionType::fwd, minMax(RightPower + SidePower, maxSpeed),
-                   velocityUnits::pct);
-      BLDrive.spin(directionType::fwd, minMax(LeftPower - SidePower, maxSpeed),
-                   velocityUnits::pct);
-
-      task::sleep(50);
+  double PrevLeftError = 0;
+  double PrevRightError = 0;
+  int TicksAtTarget = 0;
+  PuppetMaster.Screen.clearLine();
+  PuppetMaster.Screen.print(TARGET_ROTATION + ACCEPTABLE_ERROR);
+  while (TARGET_TICKS > TicksAtTarget) {
+    //figure out clockwise and counterclock error
+    if (TARGET_ROTATION < Inertial2.heading()) {
+      ClockWiseError = 360 - Inertial2.heading() + TARGET_ROTATION;
+      CounterWiseError = Inertial2.heading() - TARGET_ROTATION ;
+    } else {
+      ClockWiseError = TARGET_ROTATION - Inertial2.heading();
+      CounterWiseError = Inertial2.heading() + (360 - TARGET_ROTATION);
     }
-  } else if (TARGET_VALUEZ != 0) {
-    while (RulerL.distance(distanceUnits::cm) > TARGET_VALUEZ + closeness ||
-           RulerL.distance(distanceUnits::cm) < TARGET_VALUEZ - closeness ||
-           RulerR.distance(distanceUnits::cm) > TARGET_VALUEZ + closeness ||
-           RulerR.distance(distanceUnits::cm) < TARGET_VALUEZ - closeness) {
-      // proportional component below
-      double LeftPower = 0;
-      double RightPower = 0;
 
-      double LeftError = TARGET_VALUEZ - RulerL.distance(distanceUnits::cm);
-      double RightError = TARGET_VALUEZ - RulerR.distance(distanceUnits::cm);
-      if (PrevLeftError == 0) {
-        LeftDerivative = 0;
-      } else {
-        LeftDerivative = LeftError - PrevLeftError;
-      }
-      PrevLeftError = LeftError;
+    //integral for left and right
 
-      if (PrevRightError == 0) {
-        RightDerivative = 0;
-      } else {
-        RightDerivative = RightError - PrevRightError;
-      }
-      PrevRightError = RightError;
-
-      LeftPower = LeftError * kP + RightDerivative * kD;
-      RightPower = RightError * kP + RightDerivative * kD;
-
-      // derivative goes here
-
-      FRDrive.spin(directionType::fwd, minMax(RightPower, maxSpeed), velocityUnits::pct);
-      FLDrive.spin(directionType::fwd, minMax(LeftPower, maxSpeed), velocityUnits::pct);
-      BRDrive.spin(directionType::fwd, minMax(RightPower, maxSpeed), velocityUnits::pct);
-      BLDrive.spin(directionType::fwd, minMax(LeftPower, maxSpeed), velocityUnits::pct);
-
-      task::sleep(100);
+    LeftIntegral = LeftIntegral + LeftError;
+    if(LeftError <= 0)
+    {
+      LeftIntegral = 0;
     }
-  } else if (TARGET_VALUEX != 0) {
-    while (RulerS.distance(distanceUnits::cm) > TARGET_VALUEX + closeness ||
-           RulerS.distance(distanceUnits::cm) < TARGET_VALUEX - closeness) {
-      // proportional component below
-      double SidePower = 0;
-
-      double SideError = TARGET_VALUEX - RulerS.distance(distanceUnits::cm);
-      if (PrevSideError == 0) {
-        SideDerivative = 0;
-      } else {
-        SideDerivative = SideError - PrevSideError;
-      }
-      PrevSideError = SideError;
-      SidePower = SideError * kP + SideDerivative * kD;
-
-      // derivative goes here
-
-      
-
-      FRDrive.spin(directionType::fwd, minMax(SidePower, maxSpeed), velocityUnits::pct);
-      FLDrive.spin(directionType::fwd, minMax(-SidePower, maxSpeed), velocityUnits::pct);
-      BRDrive.spin(directionType::fwd, minMax(-SidePower, maxSpeed), velocityUnits::pct);
-      BLDrive.spin(directionType::fwd, minMax(SidePower, maxSpeed), velocityUnits::pct);
-
-      task::sleep(25);
+    RightIntegral = RightIntegral + RightError;
+    if(RightError <= 0)
+    {
+      RightIntegral = 0;
     }
+
+    YError = TARGET_Y - RulerY.distance(distanceUnits::cm);
+    PuppetMaster.Screen.clearLine();
+    PuppetMaster.Screen.print(YError);    //Decide to move counter clockwise or clockwise
+
+    if (ClockWiseError < CounterWiseError) {
+      LeftError = YError + ClockWiseError * kZ;
+      RightError = YError - ClockWiseError * kZ;
+    }
+    else {
+      RightError = YError + CounterWiseError * kZ;
+      LeftError = YError - CounterWiseError * kZ;
+    }
+    
+    //derivative
+    if(PrevLeftError == 0 && PrevRightError == 0)
+    {
+      RightDerivative = 0;
+      LeftDerivative = 0;
+    }
+    else {
+      LeftDerivative = LeftError - PrevLeftError;
+      RightDerivative = RightError - PrevRightError;
+    }
+    
+    PrevLeftError = LeftError;
+    PrevRightError = RightError;
+
+    //drive
+    FRDrive.spin(directionType::fwd, RightError * kP + RightIntegral * kI + RightDerivative * kD, velocityUnits::pct);
+    FLDrive.spin(directionType::fwd, LeftError * kP + LeftIntegral * kI + LeftDerivative * kD, velocityUnits::pct);
+    BLDrive.spin(directionType::fwd, LeftError * kP + LeftIntegral * kI + LeftDerivative * kD, velocityUnits::pct);
+    BRDrive.spin(directionType::fwd, RightError * kP + RightIntegral * kI + RightDerivative * kD, velocityUnits::pct);
+    
+
+    //check if at target and heightens TicksAtTarget
+    if(RulerY.distance(distanceUnits::cm) < TARGET_Y + ACCEPTABLE_ERROR &&
+        RulerY.distance(distanceUnits::cm) > TARGET_Y - ACCEPTABLE_ERROR)
+    {
+      TicksAtTarget++;
+      BRDrive.stop();
+      FRDrive.stop();
+      BLDrive.stop();
+      FLDrive.stop();
+    }
+    else {
+      TicksAtTarget = 0;
+    }
+
+    task::sleep(20);
+
+    
   }
-
-  FRDrive.stop();
   BRDrive.stop();
-  FLDrive.stop();
+  FRDrive.stop();
   BLDrive.stop();
+  FLDrive.stop();
+  
+}
+
+void PIDSide(double TARGET_ROTATION, double TARGET_Y, double kZ, double kP, double kI, double kD,
+             double ACCEPTABLE_ERROR, int TARGET_TICKS) {
+  double LeftError = 0;
+  double RightError = 0;
+  double ClockWiseError = 0;
+  double CounterWiseError = 0;
+  double YError = 0;
+  double LeftIntegral = 0;
+  double RightIntegral = 0;
+  double LeftDerivative = 0;
+  double RightDerivative = 0;
+  double PrevLeftError = 0;
+  double PrevRightError = 0;
+  int TicksAtTarget = 0;
+  PuppetMaster.Screen.clearLine();
+  PuppetMaster.Screen.print(TARGET_ROTATION + ACCEPTABLE_ERROR);
+  while (TARGET_TICKS > TicksAtTarget) {
+    //figure out clockwise and counterclock error
+    if (TARGET_ROTATION < Inertial2.heading()) {
+      ClockWiseError = 360 - Inertial2.heading() + TARGET_ROTATION;
+      CounterWiseError = Inertial2.heading() - TARGET_ROTATION ;
+    } else {
+      ClockWiseError = TARGET_ROTATION - Inertial2.heading();
+      CounterWiseError = Inertial2.heading() + (360 - TARGET_ROTATION);
+    }
+
+    //integral for left and right
+
+    LeftIntegral = LeftIntegral + LeftError;
+    if(LeftError <= 0)
+    {
+      LeftIntegral = 0;
+    }
+    RightIntegral = RightIntegral + RightError;
+    if(RightError <= 0)
+    {
+      RightIntegral = 0;
+    }
+
+    YError = TARGET_Y - RulerS.distance(distanceUnits::cm);
+    PuppetMaster.Screen.clearLine();
+    PuppetMaster.Screen.print(YError);    //Decide to move counter clockwise or clockwise
+
+    if (ClockWiseError < CounterWiseError) {
+      LeftError = YError + ClockWiseError * kZ;
+      RightError = YError - ClockWiseError * kZ;
+    }
+    else {
+      RightError = YError + CounterWiseError * kZ;
+      LeftError = YError - CounterWiseError * kZ;
+    }
+    
+    //derivative
+    if(PrevLeftError == 0 && PrevRightError == 0)
+    {
+      RightDerivative = 0;
+      LeftDerivative = 0;
+    }
+    else {
+      LeftDerivative = LeftError - PrevLeftError;
+      RightDerivative = RightError - PrevRightError;
+    }
+    
+    PrevLeftError = LeftError;
+    PrevRightError = RightError;
+
+    //drive
+    FRDrive.spin(directionType::fwd, RightError * kP + RightIntegral * kI + RightDerivative * kD, velocityUnits::pct);
+    FLDrive.spin(directionType::fwd, -(LeftError * kP + LeftIntegral * kI + LeftDerivative * kD), velocityUnits::pct);
+    BLDrive.spin(directionType::fwd, LeftError * kP + LeftIntegral * kI + LeftDerivative * kD, velocityUnits::pct);
+    BRDrive.spin(directionType::fwd, -(RightError * kP + RightIntegral * kI + RightDerivative * kD), velocityUnits::pct);
+    
+
+    //check if at target and heightens TicksAtTarget
+    if(RulerS.distance(distanceUnits::cm) < TARGET_Y + ACCEPTABLE_ERROR &&
+        RulerS.distance(distanceUnits::cm) > TARGET_Y - ACCEPTABLE_ERROR)
+    {
+      TicksAtTarget++;
+      BRDrive.stop();
+      FRDrive.stop();
+      BLDrive.stop();
+      FLDrive.stop();
+    }
+    else {
+      TicksAtTarget = 0;
+    }
+
+    task::sleep(20);
+
+    
+  }
+  BRDrive.stop();
+  FRDrive.stop();
+  BLDrive.stop();
+  FLDrive.stop();
+  
+}
+
+void PIDSideDrive(double TARGET_ROTATION, double TARGET_Y, double TARGET_X, double kZ, double kP, double kI, double kD,
+             double ACCEPTABLE_ERROR, int TARGET_TICKS) {
+  double LeftError = 0;
+  double RightError = 0;
+  double ClockWiseError = 0;
+  double CounterWiseError = 0;
+  double YError = 0;
+  double LeftIntegral = 0;
+  double RightIntegral = 0;
+  double LeftDerivative = 0;
+  double RightDerivative = 0;
+  double PrevLeftError = 0;
+  double PrevRightError = 0;
+  double SideError = 0;
+  double SideIntegral = 0;
+  double SideDerivative = 0;
+  double PrevSideError = 0;
+  double SidePower = 0;
+  int TicksAtTarget = 0;
+  PuppetMaster.Screen.clearLine();
+  PuppetMaster.Screen.print(TARGET_ROTATION + ACCEPTABLE_ERROR);
+  while (TARGET_TICKS > TicksAtTarget) {
+    //figure out clockwise and counterclock error
+    if (TARGET_ROTATION < Inertial2.heading()) {
+      ClockWiseError = 360 - Inertial2.heading() + TARGET_ROTATION;
+      CounterWiseError = Inertial2.heading() - TARGET_ROTATION ;
+    } else {
+      ClockWiseError = TARGET_ROTATION - Inertial2.heading();
+      CounterWiseError = Inertial2.heading() + (360 - TARGET_ROTATION);
+    }
+
+    //integral for left and right
+
+    LeftIntegral = LeftIntegral + LeftError;
+    if(LeftError <= 0)
+    {
+      LeftIntegral = 0;
+    }
+    RightIntegral = RightIntegral + RightError;
+    if(RightError <= 0)
+    {
+      RightIntegral = 0;
+    }
+    SideIntegral = SideIntegral + SideError;
+    if(SideError <= 0)
+    {
+      SideIntegral = 0;
+    }
+
+    YError = TARGET_Y - RulerY.distance(distanceUnits::cm);
+    SideError = TARGET_X - RulerS.distance(distanceUnits::cm);
+    PuppetMaster.Screen.clearLine();
+    PuppetMaster.Screen.print(YError);
+    //Decide to move counter clockwise or clockwise
+
+    if (ClockWiseError < CounterWiseError) {
+      LeftError = YError + ClockWiseError * kZ;
+      RightError = YError - ClockWiseError * kZ;
+    }
+    else {
+      RightError = YError + CounterWiseError * kZ;
+      LeftError = YError - CounterWiseError * kZ;
+    }
+    
+    //derivative
+    if(PrevLeftError == 0 && PrevRightError == 0)
+    {
+      RightDerivative = 0;
+      LeftDerivative = 0;
+    }
+    else {
+      LeftDerivative = LeftError - PrevLeftError;
+      RightDerivative = RightError - PrevRightError;
+
+    }
+    if(PrevSideError == 0)
+    {
+      SideDerivative = 0;
+    }
+    else {
+      SideDerivative = SideError - PrevSideError;
+    }
+    
+    
+    PrevLeftError = LeftError;
+    PrevRightError = RightError;
+    PrevSideError = SideError;
+
+    SidePower = SideDerivative * kD + SideError * kP + SideIntegral * kI;
+
+    //drive
+    FRDrive.spin(directionType::fwd, RightError * kP + RightIntegral * kI + RightDerivative * kD + SidePower, velocityUnits::pct);
+    FLDrive.spin(directionType::fwd, LeftError * kP + LeftIntegral * kI + LeftDerivative * kD - SidePower, velocityUnits::pct);
+    BLDrive.spin(directionType::fwd, LeftError * kP + LeftIntegral * kI + LeftDerivative * kD + SidePower, velocityUnits::pct);
+    BRDrive.spin(directionType::fwd, RightError * kP + RightIntegral * kI + RightDerivative * kD - SidePower, velocityUnits::pct);
+    
+
+    //check if at target and heightens TicksAtTarget
+    if(RulerY.distance(distanceUnits::cm) < TARGET_Y + ACCEPTABLE_ERROR &&
+        RulerY.distance(distanceUnits::cm) > TARGET_Y - ACCEPTABLE_ERROR &&
+        RulerS.distance(distanceUnits::cm) < TARGET_X + ACCEPTABLE_ERROR &&
+        RulerS.distance(distanceUnits::cm) > TARGET_X - ACCEPTABLE_ERROR)
+    {
+      TicksAtTarget++;
+      BRDrive.stop();
+      FRDrive.stop();
+      BLDrive.stop();
+      FLDrive.stop();
+    }
+    else {
+      TicksAtTarget = 0;
+    }
+
+    task::sleep(20);
+
+    
+  }
+  BRDrive.stop();
+  FRDrive.stop();
+  BLDrive.stop();
+  FLDrive.stop();
+  
 }
 
 void autonomous(void) {
@@ -275,6 +552,9 @@ void autonomous(void) {
   IntakeTwo.stop();*/
 
   float FIRST_POINT = 18;
+
+  Inertial2.calibrate();
+  task::sleep(2300);
 
   /*ArmL.startSpinFor(directionType::fwd, 1, rotationUnits::rev);
   ArmR.startSpinFor(directionType::fwd, 1, rotationUnits::rev); */
@@ -308,8 +588,8 @@ void autonomous(void) {
   PuppetMaster.Screen.print("start lmao");
 
   
-
-  NewPID(0, 15.5, 2.96, 0.648, 0.8, 100);
+  PIDDrive(0, 15.5, 0.6, 2.5, 0.4, -0.6, 0.8, 5);
+  //NewPID(0, 15.5, 2.96, 0.648, 0.8, 100);
   task::sleep(220);
 
   IntakeOne.stop();
@@ -320,8 +600,10 @@ void autonomous(void) {
 
   task::sleep(100);
 
-  NewPID(0, 65, 2.8, -0.6, 4.5, 58);
-  NewPID(94, 76.5, 2.35, -0.3, 1.2, 40);
+  //NewPID(0, 65, 2.8, -0.6, 4.5, 58);
+  PIDDrive(0, 65, 0.5, 3.0, 0, 0, 4.5, 1);
+  //NewPID(94, 76.5, 2.35, -0.3, 1.2, 40);
+  //PIDSideDrive(0, 76.5, 94, 0.3, 2.7, 0, 0, 1, 4);
 
   IntakeOne.spin(directionType::rev, 100, velocityUnits::pct);
   IntakeTwo.spin(directionType::rev, 100, velocityUnits::pct);
@@ -424,7 +706,7 @@ void usercontrol(void) {
 
     PuppetMaster.Screen.clearLine();
     PuppetMaster.Screen.print(RulerS.distance(distanceUnits::cm));
-    PuppetMaster.Screen.print(RulerL.distance(distanceUnits::cm));
+    PuppetMaster.Screen.print(RulerY.distance(distanceUnits::cm));
 
     if (PuppetMaster.ButtonDown.pressing() == true) {
       preciseSpeedY -= 10;
@@ -498,8 +780,8 @@ void usercontrol(void) {
       IntakeOne.spin(directionType::fwd, 97, velocityUnits::pct);
       IntakeTwo.spin(directionType::fwd, 97, velocityUnits::pct);
 
-      ArmL.spin(directionType::rev, 35, velocityUnits::pct);
-      ArmR.spin(directionType::rev, 35, velocityUnits::pct);
+      ArmL.spin(directionType::rev, 40, velocityUnits::pct);
+      ArmR.spin(directionType::rev, 40, velocityUnits::pct);
     }
     if (PuppetMaster.ButtonB.pressing()) {
       IntakeOne.spin(directionType::rev, 97, velocityUnits::pct);

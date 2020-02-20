@@ -3,9 +3,10 @@ using namespace vex;
 extern brain Brain;
 
 // VEXcode devices
-extern sonar RulerL;
-extern sonar RulerR;
+extern sonar RulerY;
+extern sonar RulerF;
 extern sonar RulerS;
+extern inertial Inertial2;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Text.

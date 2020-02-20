@@ -8,9 +8,10 @@ using code = vision::code;
 brain  Brain;
 
 // VEXcode device constructors
-sonar RulerL = sonar(Brain.ThreeWirePort.A);
-sonar RulerR = sonar(Brain.ThreeWirePort.C);
+sonar RulerY = sonar(Brain.ThreeWirePort.A);
+sonar RulerF = sonar(Brain.ThreeWirePort.C);
 sonar RulerS = sonar(Brain.ThreeWirePort.G);
+inertial Inertial2 = inertial(PORT16);
 
 // VEXcode generated functions
 
