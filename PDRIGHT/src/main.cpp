@@ -724,6 +724,8 @@ void PIDDriveForward(double TARGET_ROTATION, double TARGET_Y, double kZ, double 
   BLDrive.stop();
   FLDrive.stop();
 }
+//pid for driving using side sensord and front sensors
+//kZ is used for weighting use of inertial sensors for turning
 void PIDSideDriveForward(double TARGET_ROTATION, double TARGET_Y, double TARGET_X,
                   double kZ, double kP, double kI, double kD,
                   double ACCEPTABLE_ERROR, int TARGET_TICKS, double MAX_I,
@@ -745,8 +747,11 @@ void PIDSideDriveForward(double TARGET_ROTATION, double TARGET_Y, double TARGET_
   double PrevSideError = 0;
   double SidePower = 0;
   int TicksAtTarget = 0;
+
+  //printing for debugging
   PuppetMaster.Screen.clearLine();
   PuppetMaster.Screen.print(LeftDerivative);
+  //start a loop which runs while the ticks at target area is not high enough
   while (TARGET_TICKS > TicksAtTarget) {
     // figure out clockwise and counterclock error
     if (TARGET_ROTATION < Inertial2.heading()) {
@@ -759,6 +764,7 @@ void PIDSideDriveForward(double TARGET_ROTATION, double TARGET_Y, double TARGET_
 
     // integral for left and right
 
+    //zero integral if passed or reached setpoint, integral can cause overshoot on its own
     LeftIntegral = LeftIntegral + LeftError;
     if (LeftError <= 0) {
       LeftIntegral = 0;
@@ -771,6 +777,7 @@ void PIDSideDriveForward(double TARGET_ROTATION, double TARGET_Y, double TARGET_
     if (SideError <= 0) {
       SideIntegral = 0;
     }
+    //if integral is too high, limit it
     if (SideIntegral > MAX_I) {
       SideIntegral = MAX_I;
     }
@@ -780,13 +787,15 @@ void PIDSideDriveForward(double TARGET_ROTATION, double TARGET_Y, double TARGET_
     if (RightIntegral > MAX_I) {
       RightIntegral = MAX_I;
     }
+    //figure out errors for back and front
     YError = -TARGET_Y + RulerF.distance(distanceUnits::cm);
     SideError = -TARGET_X + RulerS.distance(distanceUnits::cm);
     PuppetMaster.Screen.clearLine();
     PuppetMaster.Screen.print(SideError);
-    // Decide to move counter clockwise or clockwise
+    // Decide to move counter clockwise or clockwise by comparing two errors
 
     if (ClockWiseError < CounterWiseError) {
+      //get a seperate error for left and right by either subtracting or adding rotation error multiplied by kZ, a constant
       LeftError = YError + ClockWiseError * kZ;
       RightError = YError - ClockWiseError * kZ;
     } else {
@@ -812,35 +821,14 @@ void PIDSideDriveForward(double TARGET_ROTATION, double TARGET_Y, double TARGET_
     PrevRightError = RightError;
     PrevSideError = SideError;
 
-    SidePower =
-        minMax(kZ * (SideDerivative * kD + SideError * kP + SideIntegral * kI),
-               MAX_SPEED);
+    //calculate side power
+    SidePower = minMax(kZ * (SideDerivative * kD + SideError * kP + SideIntegral * kI), MAX_SPEED);
 
     // drive
-    FRDrive.spin(
-        directionType::fwd,
-        minMax(RightError * kP + RightIntegral * kI + RightDerivative * kD,
-               MAX_SPEED) -
-            SidePower,
-        velocityUnits::pct);
-    FLDrive.spin(
-        directionType::fwd,
-        minMax(LeftError * kP + LeftIntegral * kI + LeftDerivative * kD,
-               MAX_SPEED) +
-            SidePower,
-        velocityUnits::pct);
-    BLDrive.spin(
-        directionType::fwd,
-        minMax(LeftError * kP + LeftIntegral * kI + LeftDerivative * kD,
-               MAX_SPEED) -
-            SidePower,
-        velocityUnits::pct);
-    BRDrive.spin(
-        directionType::fwd,
-        minMax(RightError * kP + RightIntegral * kI + RightDerivative * kD,
-               MAX_SPEED) +
-            SidePower,
-        velocityUnits::pct);
+    FRDrive.spin(directionType::fwd, minMax(RightError * kP + RightIntegral * kI + RightDerivative * kD, MAX_SPEED) - SidePower, velocityUnits::pct);
+    FLDrive.spin(directionType::fwd, minMax(LeftError * kP + LeftIntegral * kI + LeftDerivative * kD, MAX_SPEED) + SidePower, velocityUnits::pct);
+    BLDrive.spin(directionType::fwd, minMax(LeftError * kP + LeftIntegral * kI + LeftDerivative * kD, MAX_SPEED) - SidePower, velocityUnits::pct);
+    BRDrive.spin(directionType::fwd, minMax(RightError * kP + RightIntegral * kI + RightDerivative * kD, MAX_SPEED) + SidePower, velocityUnits::pct);
 
     // check if at target and heightens TicksAtTarget
     if (RulerF.distance(distanceUnits::cm) < TARGET_Y + ACCEPTABLE_ERROR &&
@@ -856,7 +844,7 @@ void PIDSideDriveForward(double TARGET_ROTATION, double TARGET_Y, double TARGET_
       TicksAtTarget = 0;
     }
 
-    task::sleep(2);
+    wait(2, msec);
   }
   BRDrive.stop();
   FRDrive.stop();
@@ -955,8 +943,7 @@ void autonomous(void) {
 
   ArmL.startSpinFor(directionType::rev, 0.2, rotationUnits::rev, 60,
                     velocityUnits::pct);
-  ArmR.startSpinFor(directionType::rev, 0.2, rotationUnits::rev, 60,
-                    velocityUnits::pct);
+  ArmR.startSpinFor(directionType::rev, 0.2, rotationUnits::rev, 60, velocityUnits::pct);
 
   PIDDrive(0, 7.5, 0.7, 1.4, 0.1, 0.9, 1.5, 1, 20, 100);  
   
@@ -1008,10 +995,10 @@ void autonomous(void) {
 
   PIDTurn(0, 1.1, 0, 0.7, 4, 2, 30, 100);
   
-  FRDrive.spinFor(0.5, rotationUnits::rev, 70, velocityUnits::pct, false);
-  BRDrive.spinFor(0.5, rotationUnits::rev, 70, velocityUnits::pct, false);
-  FLDrive.spinFor(0.5, rotationUnits::rev, 70, velocityUnits::pct, false);
-  BLDrive.spinFor(0.5, rotationUnits::rev, 70, velocityUnits::pct, false);
+  FRDrive.spinFor(0.42, rotationUnits::rev, 70, velocityUnits::pct, false);
+  BRDrive.spinFor(0.42, rotationUnits::rev, 70, velocityUnits::pct, false);
+  FLDrive.spinFor(0.42, rotationUnits::rev, 70, velocityUnits::pct, false);
+  BLDrive.spinFor(0.42, rotationUnits::rev, 70, velocityUnits::pct, false);
 
   IntakeOne.spin(directionType::fwd, 100, velocityUnits::pct);
   IntakeTwo.spin(directionType::fwd, 100, velocityUnits::pct);
@@ -1019,7 +1006,7 @@ void autonomous(void) {
   ArmL.startSpinFor(directionType::fwd, 1.09, rotationUnits::rev, 60, velocityUnits::pct);
   ArmR.spinFor(directionType::fwd, 1.09, rotationUnits::rev, 60, velocityUnits::pct);
   
-  wait(1000, msec);
+  wait(3000, msec);
 
   IntakeOne.stop();
   IntakeTwo.stop();
@@ -1050,6 +1037,8 @@ void usercontrol(void) {
   int FLVelocity = 0;
 
   int MAX_SPEED = 70;
+
+  double speedMultiplier = 0.85;
 
   int preciseSpeedX = 0;
   int preciseSpeedY = 0;
@@ -1093,35 +1082,19 @@ void usercontrol(void) {
       preciseSpeedX += 10;
     }
 
-    FLVelocity = sigmoid_map[(int)minMax(PuppetMaster.Axis3.value() +
-                                             PuppetMaster.Axis4.value() +
-                                             PuppetMaster.Axis1.value(),
-                                         127) +
-                             127] *
-                     0.85 +
-                 preciseSpeedX + preciseSpeedY;
-    FRVelocity = sigmoid_map[(int)minMax(PuppetMaster.Axis3.value() -
-                                             PuppetMaster.Axis4.value() -
-                                             PuppetMaster.Axis1.value(),
-                                         127) +
-                             127] *
-                     0.85 -
-                 preciseSpeedX + preciseSpeedY;
+    if(ArmL.rotation(rotationUnits::rev) >= 1/*lifted rotation*/ || ArmR.rotation(rotationUnits::rev) >= 1)
+    {
+      speedMultiplier = 0.45;
+    }
+    else
+    {
+      speedMultiplier = 0.85;
+    }
 
-    BRVelocity = sigmoid_map[(int)minMax(PuppetMaster.Axis3.value() +
-                                             PuppetMaster.Axis4.value() -
-                                             PuppetMaster.Axis1.value(),
-                                         127) +
-                             127] *
-                     0.85 +
-                 preciseSpeedX + preciseSpeedY;
-    BLVelocity = sigmoid_map[(int)minMax(PuppetMaster.Axis3.value() -
-                                             PuppetMaster.Axis4.value() +
-                                             PuppetMaster.Axis1.value(),
-                                         127) +
-                             127] *
-                     0.85 -
-                 preciseSpeedX + preciseSpeedY;
+    FLVelocity = sigmoid_map[(int)minMax(PuppetMaster.Axis3.value() + PuppetMaster.Axis4.value() + PuppetMaster.Axis1.value(), 127) + 127] * speedMultiplier + preciseSpeedX + preciseSpeedY;
+    FRVelocity = sigmoid_map[(int)minMax(PuppetMaster.Axis3.value() - PuppetMaster.Axis4.value() - PuppetMaster.Axis1.value(), 127) + 127] * speedMultiplier - preciseSpeedX + preciseSpeedY;
+    BRVelocity = sigmoid_map[(int)minMax(PuppetMaster.Axis3.value() + PuppetMaster.Axis4.value() - PuppetMaster.Axis1.value(), 127) + 127] * speedMultiplier + preciseSpeedX + preciseSpeedY;
+    BLVelocity = sigmoid_map[(int)minMax(PuppetMaster.Axis3.value() - PuppetMaster.Axis4.value() + PuppetMaster.Axis1.value(), 127) + 127] * speedMultiplier - preciseSpeedX + preciseSpeedY;
 
     FRDrive.spin(directionType::fwd, FRVelocity, velocityUnits::pct);
     BRDrive.spin(directionType::fwd, BRVelocity, velocityUnits::pct);
