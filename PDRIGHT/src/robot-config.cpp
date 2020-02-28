@@ -12,6 +12,7 @@ sonar RulerY = sonar(Brain.ThreeWirePort.A);
 sonar RulerF = sonar(Brain.ThreeWirePort.C);
 sonar RulerS = sonar(Brain.ThreeWirePort.E);
 inertial Inertial2 = inertial(PORT16);
+sonar RulerE = sonar(Brain.ThreeWirePort.G);
 
 // VEXcode generated functions
 

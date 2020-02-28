@@ -7,6 +7,7 @@ extern sonar RulerY;
 extern sonar RulerF;
 extern sonar RulerS;
 extern inertial Inertial2;
+extern sonar RulerE;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Text.
