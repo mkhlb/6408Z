@@ -73,7 +73,7 @@ motor BLDrive(PORT5, gearSetting::ratio18_1, false);
 motor ArmR(PORT3, gearSetting::ratio36_1, true);
 motor ArmL(PORT15, gearSetting::ratio36_1, false);
 
-motor IntakeOne(PORT16, gearSetting::ratio18_1, true); // right
+motor IntakeOne(PORT8, gearSetting::ratio18_1, true); // right
 motor IntakeTwo(PORT19, gearSetting::ratio18_1, false);
 
 // sonar RulerL = sonar(Brain.ThreeWirePort.A); this will break the code, gives
@@ -1118,7 +1118,7 @@ void autonomous(void) {
   float FIRST_POINT = 18;
 
   // Inertial2.calibrate();
-  task::sleep(3000);
+  //task::sleep(3000);
 
   FRDrive.setStopping(brakeType::hold);
   BRDrive.setStopping(brakeType::hold);
@@ -1171,7 +1171,7 @@ void autonomous(void) {
   PIDDrive(0, 65, 0.8, 2, 0, 0, 5, 1, 40, 53);
   //NewPID(94, 76.5, 2.35, -0.3, 1.2, 40);
   //PIDSideDrive(0, 73, 93, 0.59, 0.95, 0.13, 0.9, 4.5, 1, 40, 40);
-  PIDSideDrive(0, 74.5, 93, 0.53, 0.785, 0.25, 0.25, 5.9, 3, 15, 40);
+  PIDSideDrive(0, 75.2, 93, 0.53, 0.785, 0.25, 0.25, 5.9, 3, 15, 40);
   //PIDSideDrive(TARGET_ROTATION, TARGET_Y, TARGET_X, kZ, kP, kI, kD, ACCEPTABLE_ERROR, TARGET_TICKS, MAX_I, MAX_SPEED)
 
   IntakeOne.spin(directionType::rev, 100, velocityUnits::pct);
@@ -1241,9 +1241,9 @@ void autonomous(void) {
   IntakeTwo.stop();
 
   //done stacking 5 cubes
-
+/*
   //turn to face cube
-  PIDTurn(0, 1.3, 0, 0.7, 6, 2, 30, 100);
+  PIDTurn(0, 1.1, 0, 0.7, 4, 2, 30, 100);
   
   FRDrive.spinFor(0.2, rotationUnits::rev, 70, velocityUnits::pct, false);
   BRDrive.spinFor(0.2, rotationUnits::rev, 70, velocityUnits::pct, false);
@@ -1280,9 +1280,8 @@ void autonomous(void) {
 
   IntakeOne.stop();
   IntakeTwo.stop();
-/*
+
   //drive back
-  
 
   FRDrive.spinFor(-0.2, rotationUnits::rev, 70, velocityUnits::pct, false);
   BRDrive.spinFor(-0.2, rotationUnits::rev, 70, velocityUnits::pct, false);
@@ -1409,9 +1408,13 @@ double kE = 0.84;
       preciseSpeedX += 10;
     }
 
-    if(ArmL.rotation(rotationUnits::rev) <= -1/*lifted rotation*/ || ArmR.rotation(rotationUnits::rev) <= -1)
+    if(ArmL.rotation(rotationUnits::rev) <= -1.3/*lifted rotation*/ || ArmR.rotation(rotationUnits::rev) <= -1.3)
     {
-      speedMultiplier = 0.27;
+      speedMultiplier = 0.285;
+    }
+    else if(ArmL.rotation(rotationUnits::rev) <= -1/*lifted rotation*/ || ArmR.rotation(rotationUnits::rev) <= -1)
+    {
+      speedMultiplier = 0.395;
     }
     else
     {
