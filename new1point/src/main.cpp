@@ -1,26 +1,26 @@
 // ---- START VEXCODE CONFIGURED DEVICES ----
 // Robot Configuration:
 // [Name]               [Type]        [Port(s)]
-// RulerY               sonar         A, B            
-// RulerF               sonar         C, D            
-// RulerS               sonar         G, H            
-// Inertial2            inertial      4               
+// RulerY               sonar         A, B
+// RulerF               sonar         C, D
+// RulerS               sonar         G, H
+// Inertial2            inertial      4
 // ---- END VEXCODE CONFIGURED DEVICES ----
 // ---- START VEXCODE CONFIGURED DEVICES ----
 // Robot Configuration:
 // [Name]               [Type]        [Port(s)]
-// RulerY               sonar         A, B            
-// RulerF               sonar         C, D            
-// RulerS               sonar         G, H            
-// Inertial2            inertial      13              
+// RulerY               sonar         A, B
+// RulerF               sonar         C, D
+// RulerS               sonar         G, H
+// Inertial2            inertial      13
 // ---- END VEXCODE CONFIGURED DEVICES ----
 // ---- START VEXCODE CONFIGURED DEVICES ----
 // Robot Configuration:
 // [Name]               [Type]        [Port(s)]
-// RulerY               sonar         A, B            
-// RulerF               sonar         C, D            
-// RulerS               sonar         G, H            
-// Inertial2            inertial      8               
+// RulerY               sonar         A, B
+// RulerF               sonar         C, D
+// RulerS               sonar         G, H
+// Inertial2            inertial      8
 // ---- END VEXCODE CONFIGURED DEVICES ----
 /*----------------------------------------------------------------------------*/
 /*                                                                            */
@@ -33,7 +33,6 @@
 
 #include "vex.h"
 #include <cmath>
-
 
 using namespace vex;
 using signature = vision::signature;
@@ -56,7 +55,6 @@ motor ArmL(PORT15, gearSetting::ratio36_1, false);
 
 motor IntakeOne(PORT8, gearSetting::ratio18_1, true); // right
 motor IntakeTwo(PORT19, gearSetting::ratio18_1, false);
-
 
 // sonar RulerL = sonar(Brain.ThreeWirePort.A); this will break the code, gives
 // memory permission error
@@ -137,7 +135,6 @@ void pre_auton(void) {
 
   PuppetMaster.Screen.clearLine();
   PuppetMaster.Screen.print("done calibrating");
-  
 }
 
 /*---------------------------------------------------------------------------*/
@@ -390,13 +387,15 @@ void PIDSide(double TARGET_ROTATION, double TARGET_Y, double kZ, double kP,
       LeftError = YError + ClockWiseError * kZ;
       RightError = YError - ClockWiseError * kZ;
       PuppetMaster.Screen.clearLine();
-      PuppetMaster.Screen.print("clockwise"); // Decide to move counter clockwise or clockwise
+      PuppetMaster.Screen.print(
+          "clockwise"); // Decide to move counter clockwise or clockwise
 
     } else {
       RightError = YError + CounterWiseError * kZ;
       LeftError = YError - CounterWiseError * kZ;
       PuppetMaster.Screen.clearLine();
-      PuppetMaster.Screen.print("counterclock"); // Decide to move counter clockwise or clockwise
+      PuppetMaster.Screen.print(
+          "counterclock"); // Decide to move counter clockwise or clockwise
     }
 
     // derivative
@@ -593,10 +592,11 @@ void PIDSideDrive(double TARGET_ROTATION, double TARGET_Y, double TARGET_X,
   FLDrive.stop();
 }
 
-
-void PIDDriveForward(const double TARGET_ROTATION, const double TARGET_Y, const double kZ, const double kP,
-              const double kI, const double kD, const double ACCEPTABLE_ERROR, const int TARGET_TICKS,
-              const double MAX_I, const double MAX_SPEED, const double ACCEPTABLE_ROTATION) {
+void PIDDriveForward(const double TARGET_ROTATION, const double TARGET_Y,
+                     const double kZ, const double kP, const double kI,
+                     const double kD, const double ACCEPTABLE_ERROR,
+                     const int TARGET_TICKS, const double MAX_I,
+                     const double MAX_SPEED, const double ACCEPTABLE_ROTATION) {
   double LeftError = 0;
   double RightError = 0;
   double ClockWiseError = 0;
@@ -616,8 +616,7 @@ void PIDDriveForward(const double TARGET_ROTATION, const double TARGET_Y, const 
     if (TARGET_ROTATION < Inertial2.heading()) {
       ClockWiseError = 360 - Inertial2.heading() + TARGET_ROTATION;
       CounterWiseError = Inertial2.heading() - TARGET_ROTATION;
-    } 
-    else {
+    } else {
       ClockWiseError = TARGET_ROTATION - Inertial2.heading();
       CounterWiseError = Inertial2.heading() + (360 - TARGET_ROTATION);
     }
@@ -714,7 +713,6 @@ void autonomous(void) {
   // ..........................................................................
   // Insert autonomous user ode here.
 
-
   /*ArmL.spinFor(-0.1,rotationUnits::rev, 50, velocityUnits::pct,false);
   ArmR.spinFor(-0.1,rotationUnits::rev, 50, velocityUnits::pct,true);*/
 
@@ -726,10 +724,8 @@ void autonomous(void) {
   // IntakeOne.stop();
   // IntakeTwo.stop();
 
-
-
   // Inertial2.calibrate();
-  //task::sleep(3000);
+  // task::sleep(3000);
 
   FRDrive.setStopping(brakeType::hold);
   BRDrive.setStopping(brakeType::hold);
@@ -741,14 +737,14 @@ void autonomous(void) {
 
   ArmR.setStopping(brakeType::hold);
   ArmL.setStopping(brakeType::hold);
- 
+
   IntakeOne.spin(directionType::rev, 100, velocityUnits::pct);
   IntakeTwo.spin(directionType::rev, 100, velocityUnits::pct);
 
-  ArmL.startSpinFor(directionType::rev, 0.4, rotationUnits::rev, 80, velocityUnits::pct); 
-  ArmR.startSpinFor(directionType::rev, 0.4, rotationUnits::rev, 80, velocityUnits::pct);
-
-  
+  ArmL.startSpinFor(directionType::rev, 0.4, rotationUnits::rev, 80,
+                    velocityUnits::pct);
+  ArmR.startSpinFor(directionType::rev, 0.4, rotationUnits::rev, 80,
+                    velocityUnits::pct);
 
   FRDrive.spinFor(0.45, rotationUnits::rev, 90, velocityUnits::pct, false);
   BRDrive.spinFor(0.45, rotationUnits::rev, 90, velocityUnits::pct, false);
@@ -760,44 +756,49 @@ void autonomous(void) {
   FLDrive.spinFor(-0.05, rotationUnits::rev, 70, velocityUnits::pct, false);
   BLDrive.spinFor(-0.05, rotationUnits::rev, 70, velocityUnits::pct, true);
 
-  ArmL.startSpinFor(directionType::fwd, 0.5, rotationUnits::rev, 40, velocityUnits::pct); 
-  ArmR.startSpinFor(directionType::fwd, 0.5, rotationUnits::rev, 40, velocityUnits::pct);
-
+  ArmL.startSpinFor(directionType::fwd, 0.5, rotationUnits::rev, 40,
+                    velocityUnits::pct);
+  ArmR.startSpinFor(directionType::fwd, 0.5, rotationUnits::rev, 40,
+                    velocityUnits::pct);
 
   // flips out intake
   // PuppetMaster.Screen.print("start lmao");
 
-
   PIDDrive(0, 15.5, 0.9, 1, 0, 0.6, 3.5, 4, 40, 100);
-  //NewPID(0, 15.5, 2.96, 0.648, 0.8, 100);
+  // NewPID(0, 15.5, 2.96, 0.648, 0.8, 100);
   task::sleep(450);
 
   IntakeOne.stop();
   IntakeTwo.stop();
 
-  ArmL.startSpinFor(directionType::rev, 0.89, rotationUnits::rev, 80, velocityUnits::pct); 
-  ArmR.startSpinFor(directionType::rev, 0.89, rotationUnits::rev, 80, velocityUnits::pct);
+  ArmL.startSpinFor(directionType::rev, 0.89, rotationUnits::rev, 80,
+                    velocityUnits::pct);
+  ArmR.startSpinFor(directionType::rev, 0.89, rotationUnits::rev, 80,
+                    velocityUnits::pct);
 
   task::sleep(30);
 
-  //NewPID(0, 65, 2.8, -0.6, 4.5, 58);
+  // NewPID(0, 65, 2.8, -0.6, 4.5, 58);
   PIDDrive(0, 65, 0.8, 2, 0, 0, 5, 1, 40, 53);
-  //NewPID(94, 76.5, 2.35, -0.3, 1.2, 40);
-  //PIDSideDrive(0, 73, 93, 0.59, 0.95, 0.13, 0.9, 4.5, 1, 40, 40);
+  // NewPID(94, 76.5, 2.35, -0.3, 1.2, 40);
+  // PIDSideDrive(0, 73, 93, 0.59, 0.95, 0.13, 0.9, 4.5, 1, 40, 40);
   PIDSideDrive(0, 75, 93, 0.59, 0.90, 0.25, 0.23, 4.9, 2, 15, 40);
-  //PIDSideDrive(TARGET_ROTATION, TARGET_Y, TARGET_X, kZ, kP, kI, kD, ACCEPTABLE_ERROR, TARGET_TICKS, MAX_I, MAX_SPEED)
+  // PIDSideDrive(TARGET_ROTATION, TARGET_Y, TARGET_X, kZ, kP, kI, kD,
+  // ACCEPTABLE_ERROR, TARGET_TICKS, MAX_I, MAX_SPEED)
 
   IntakeOne.spin(directionType::rev, 100, velocityUnits::pct);
   IntakeTwo.spin(directionType::rev, 100, velocityUnits::pct);
 
-  ArmL.startSpinFor(directionType::fwd, 0.91, rotationUnits::rev, 21, velocityUnits::pct); 
-  ArmR.spinFor(directionType::fwd, 0.91, rotationUnits::rev, 21, velocityUnits::pct);
+  ArmL.startSpinFor(directionType::fwd, 0.91, rotationUnits::rev, 21,
+                    velocityUnits::pct);
+  ArmR.spinFor(directionType::fwd, 0.91, rotationUnits::rev, 21,
+               velocityUnits::pct);
 
   IntakeOne.spin(directionType::rev, 100, velocityUnits::pct);
   IntakeTwo.spin(directionType::rev, 100, velocityUnits::pct);
 
   task::sleep(150);
- 
+
   IntakeOne.stop();
   IntakeTwo.stop();
 
@@ -806,33 +807,32 @@ void autonomous(void) {
   ArmR.startSpinFor(directionType::rev, 0.2, rotationUnits::rev, 60,
                     velocityUnits::pct);
 
-  PIDDrive(0, 9, 0.7, 1.4, 0.1, 0.9, 1.5, 1, 20, 100);  
-  
+  PIDDrive(0, 9, 0.7, 1.4, 0.1, 0.9, 1.5, 1, 20, 100);
+
   PIDTurn(261, 1.13, 0, 0.7, 4, 2, 30, 100);
-  //PIDTurn(TARGET_ROTATION, kP, kI, kD, ACCEPTABLE_ERROR, TARGET_TICKS, MAX_I, MAX_SPEED)
+  // PIDTurn(TARGET_ROTATION, kP, kI, kD, ACCEPTABLE_ERROR, TARGET_TICKS, MAX_I,
+  // MAX_SPEED)
   IntakeOne.stop();
   IntakeTwo.stop();
 
   task::sleep(50);
 
   // PIDSide(270, 3, 2.2, 3.3, 0.1, 0.2, 6, 20, 30, 100);
-  PIDDriveForward(272, 26.2, 0.2, 1.68, 0.1, 0.9, 6.3, 2, 20, 91, 10);
+  PIDDriveForward(272, 26.2, 0.2, 1.68, 0.1, 0.9, 6.3, 6, 20, 91, 10);
   PuppetMaster.Screen.clearLine();
   PuppetMaster.Screen.print("ayyy");
   PIDTurn(270, 1.4, 0, 0.7, 5.5, 1, 30, 100);
-  //PIDDriveForward(TARGET_ROTATION, TARGET_Y, kZ, kP, kI, kD, ACCEPTABLE_ERROR, TARGET_TICKS, MAX_I, MAX_SPEED, ACCEPTABLEROTATION)
-  
+  // PIDDriveForward(TARGET_ROTATION, TARGET_Y, kZ, kP, kI, kD,
+  // ACCEPTABLE_ERROR, TARGET_TICKS, MAX_I, MAX_SPEED, ACCEPTABLEROTATION)
 
-  //FRDrive.spinFor(1.2, rotationUnits::rev, 100, velocityUnits::pct, false);
-  //BRDrive.spinFor(1.2, rotationUnits::rev, 100, velocityUnits::pct, false);
-  //FLDrive.spinFor(1.2, rotationUnits::rev, 100, velocityUnits::pct, false);
-  //BLDrive.spinFor(1.2, rotationUnits::rev, 100, velocityUnits::pct, true);
+  // FRDrive.spinFor(1.2, rotationUnits::rev, 100, velocityUnits::pct, false);
+  // BRDrive.spinFor(1.2, rotationUnits::rev, 100, velocityUnits::pct, false);
+  // FLDrive.spinFor(1.2, rotationUnits::rev, 100, velocityUnits::pct, false);
+  // BLDrive.spinFor(1.2, rotationUnits::rev, 100, velocityUnits::pct, true);
 
-
-
-  //ArmL.startSpinFor(directionType::fwd, 0.32, rotationUnits::rev, 60,
-    //                velocityUnits::pct);
-  //ArmR.startSpinFor(directionType::fwd, 0.32, rotationUnits::rev, 60,
+  // ArmL.startSpinFor(directionType::fwd, 0.32, rotationUnits::rev, 60,
+  //                velocityUnits::pct);
+  // ArmR.startSpinFor(directionType::fwd, 0.32, rotationUnits::rev, 60,
   //                  velocityUnits::pct);
 
   task::sleep(100);
@@ -843,13 +843,13 @@ void autonomous(void) {
   task::sleep(500);
 
   ArmL.startSpinFor(directionType::rev, 0.55, rotationUnits::rev, 33.5,
-                        velocityUnits::pct);
+                    velocityUnits::pct);
   ArmR.spinFor(directionType::rev, 0.55, rotationUnits::rev, 33.5,
-                 velocityUnits::pct);
+               velocityUnits::pct);
   ArmL.startSpinFor(directionType::rev, 0.49, rotationUnits::rev, 31,
-                       velocityUnits::pct);
+                    velocityUnits::pct);
   ArmR.spinFor(directionType::rev, 0.49, rotationUnits::rev, 31,
-                 velocityUnits::pct);
+               velocityUnits::pct);
   IntakeOne.stop();
   IntakeTwo.stop();
 
@@ -893,7 +893,8 @@ void usercontrol(void) {
   double kE = 0.84;
   double kDown = 0.54;
 
-  ArmL.setStopping(brakeType::hold); // setting stoppingtypes for later uses of motor.stop()
+  ArmL.setStopping(
+      brakeType::hold); // setting stoppingtypes for later uses of motor.stop()
   ArmR.setStopping(brakeType::hold);
 
   IntakeOne.setStopping(brakeType::hold);
@@ -913,13 +914,15 @@ void usercontrol(void) {
     preciseSpeedX = 0;
     preciseSpeedY = 0;
 
-    leftOffset = ArmL.rotation(rotationUnits::deg) - ArmR.rotation(rotationUnits::deg);
-    rightOffset = ArmR.rotation(rotationUnits::deg) - ArmL.rotation(rotationUnits::deg);
+    leftOffset =
+        ArmL.rotation(rotationUnits::deg) - ArmR.rotation(rotationUnits::deg);
+    rightOffset =
+        ArmR.rotation(rotationUnits::deg) - ArmL.rotation(rotationUnits::deg);
 
     PuppetMaster.Screen.clearLine();
-    
+
     PuppetMaster.Screen.print(ArmL.rotation(rotationUnits::rev));
-    //PuppetMaster.Screen.print(RulerY.distance(distanceUnits::cm));
+    // PuppetMaster.Screen.print(RulerY.distance(distanceUnits::cm));
 
     if (PuppetMaster.ButtonDown.pressing() == true) {
       preciseSpeedY -= 10;
@@ -935,75 +938,75 @@ void usercontrol(void) {
       preciseSpeedX += 10;
     }
 
-    if(ArmL.rotation(rotationUnits::rev) <= -1.3/*lifted rotation*/ || ArmR.rotation(rotationUnits::rev) <= -1.3)
-    {
+    if (ArmL.rotation(rotationUnits::rev) <= -1.3 /*lifted rotation*/ ||
+        ArmR.rotation(rotationUnits::rev) <= -1.3) {
       speedMultiplier = 0.285;
-    }
-    else if(ArmL.rotation(rotationUnits::rev) <= -1/*lifted rotation*/ || ArmR.rotation(rotationUnits::rev) <= -1)
-    {
+    } else if (ArmL.rotation(rotationUnits::rev) <= -1 /*lifted rotation*/ ||
+               ArmR.rotation(rotationUnits::rev) <= -1) {
       speedMultiplier = 0.395;
-    }
-    else
-    {
+    } else {
       speedMultiplier = 0.85;
     }
 
-    
-
     if (PuppetMaster.ButtonL2.pressing()) {
-      ArmL.spin(directionType::fwd, 60 + leftOffset * -kDown, velocityUnits::pct);
-      ArmR.spin(directionType::fwd, 60 + rightOffset * -kDown, velocityUnits::pct);
+      ArmL.spin(directionType::fwd, 60 + leftOffset * -kDown,
+                velocityUnits::pct);
+      ArmR.spin(directionType::fwd, 60 + rightOffset * -kDown,
+                velocityUnits::pct);
       boinging = false;
-    }
+    } 
     else if (PuppetMaster.ButtonL1.pressing()) {
       ArmL.spin(directionType::rev, 100 + leftOffset * kE, velocityUnits::pct);
       ArmR.spin(directionType::rev, 100 + rightOffset * kE, velocityUnits::pct);
       boinging = false;
     }
     else if (PuppetMaster.ButtonY.pressing()) {
-      preciseSpeedY += 20.2;
-      if(ArmL.rotation(rotationUnits::rev) > -0.035)
-      {
-        ArmL.startSpinTo(-0.211, rotationUnits::rev, 45.6, velocityUnits::pct);
-        ArmR.startSpinTo(-0.211, rotationUnits::rev, 45.6, velocityUnits::pct);
-      }
-      else if(ArmL.rotation(rotationUnits::rev) < -0.206)
-      {
-        ArmL.startSpinTo(-0.03, rotationUnits::rev, 22.5, velocityUnits::pct);
-        ArmR.startSpinTo(-0.03, rotationUnits::rev, 22.5, velocityUnits::pct);
-      }
-      else if(boinging == false)
-      {
-        ArmL.startSpinTo(-0.211, rotationUnits::rev, 45.6, velocityUnits::pct);
-        ArmR.startSpinTo(-0.211, rotationUnits::rev, 45.6, velocityUnits::pct);
-        boinging = true;
-      }
+      speedMultiplier = 1.1;
     } 
     else {
-      if(leftOffset > ACCEPTABLE_OFFSET_ERROR || -leftOffset < -ACCEPTABLE_OFFSET_ERROR)
-      {
+      if (leftOffset > ACCEPTABLE_OFFSET_ERROR ||
+          -leftOffset < -ACCEPTABLE_OFFSET_ERROR) {
         ArmL.spin(directionType::rev, leftOffset * kE, velocityUnits::pct);
-      }
-      else
-      {
+      } else {
         ArmL.stop();
       }
-      if(rightOffset > ACCEPTABLE_OFFSET_ERROR || -rightOffset < -ACCEPTABLE_OFFSET_ERROR)
-      {
+      if (rightOffset > ACCEPTABLE_OFFSET_ERROR ||
+          -rightOffset < -ACCEPTABLE_OFFSET_ERROR) {
         ArmR.spin(directionType::rev, rightOffset * kE, velocityUnits::pct);
-      }
-      else 
-      {
+      } else {
         ArmR.stop();
       }
 
       boinging = false;
     }
-
-    FLVelocity = sigmoid_map[(int)minMax(PuppetMaster.Axis3.value() + PuppetMaster.Axis4.value() + PuppetMaster.Axis1.value(), 127) + 127] * speedMultiplier + preciseSpeedX + preciseSpeedY;
-    FRVelocity = sigmoid_map[(int)minMax(PuppetMaster.Axis3.value() - PuppetMaster.Axis4.value() - PuppetMaster.Axis1.value(), 127) + 127] * speedMultiplier - preciseSpeedX + preciseSpeedY;
-    BRVelocity = sigmoid_map[(int)minMax(PuppetMaster.Axis3.value() + PuppetMaster.Axis4.value() - PuppetMaster.Axis1.value(), 127) + 127] * speedMultiplier + preciseSpeedX + preciseSpeedY;
-    BLVelocity = sigmoid_map[(int)minMax(PuppetMaster.Axis3.value() - PuppetMaster.Axis4.value() + PuppetMaster.Axis1.value(), 127) + 127] * speedMultiplier - preciseSpeedX + preciseSpeedY;
+    FLVelocity = sigmoid_map[(int)minMax(PuppetMaster.Axis3.value() +
+                                             PuppetMaster.Axis4.value() +
+                                             PuppetMaster.Axis1.value(),
+                                         127) +
+                             127] *
+                     speedMultiplier +
+                 preciseSpeedX + preciseSpeedY;
+    FRVelocity = sigmoid_map[(int)minMax(PuppetMaster.Axis3.value() -
+                                             PuppetMaster.Axis4.value() -
+                                             PuppetMaster.Axis1.value(),
+                                         127) +
+                             127] *
+                     speedMultiplier -
+                 preciseSpeedX + preciseSpeedY;
+    BRVelocity = sigmoid_map[(int)minMax(PuppetMaster.Axis3.value() +
+                                             PuppetMaster.Axis4.value() -
+                                             PuppetMaster.Axis1.value(),
+                                         127) +
+                             127] *
+                     speedMultiplier +
+                 preciseSpeedX + preciseSpeedY;
+    BLVelocity = sigmoid_map[(int)minMax(PuppetMaster.Axis3.value() -
+                                             PuppetMaster.Axis4.value() +
+                                             PuppetMaster.Axis1.value(),
+                                         127) +
+                             127] *
+                     speedMultiplier -
+                 preciseSpeedX + preciseSpeedY;
 
     FRDrive.spin(directionType::fwd, FRVelocity, velocityUnits::pct);
     BRDrive.spin(directionType::fwd, BRVelocity, velocityUnits::pct);
@@ -1014,17 +1017,13 @@ void usercontrol(void) {
     if (PuppetMaster.ButtonR2.pressing()) {
       IntakeOne.spin(directionType::fwd, 75, velocityUnits::pct);
       IntakeTwo.spin(directionType::fwd, 75, velocityUnits::pct);
-    } 
-    else if (PuppetMaster.ButtonR1.pressing()) {
+    } else if (PuppetMaster.ButtonR1.pressing()) {
       IntakeOne.spin(directionType::rev, 80, velocityUnits::pct);
       IntakeTwo.spin(directionType::rev, 80, velocityUnits::pct);
-    }
-    else if(PuppetMaster.ButtonY.pressing())
-    {
+    } else if (PuppetMaster.ButtonY.pressing()) {
       IntakeOne.spin(directionType::rev, 97, velocityUnits::pct);
       IntakeTwo.spin(directionType::rev, 97, velocityUnits::pct);
-    } 
-    else {
+    } else {
       IntakeOne.stop();
       IntakeTwo.stop();
     }
@@ -1036,14 +1035,13 @@ void usercontrol(void) {
       ArmL.startSpinFor(directionType::rev, 0.55, rotationUnits::rev, 33.5,
                         velocityUnits::pct);
       ArmR.spinFor(directionType::rev, 0.55, rotationUnits::rev, 33.5,
-                 velocityUnits::pct);
+                   velocityUnits::pct);
       ArmL.startSpinFor(directionType::rev, 0.45, rotationUnits::rev, 32,
                         velocityUnits::pct);
       ArmR.spinFor(directionType::rev, 0.45, rotationUnits::rev, 32,
-                 velocityUnits::pct);
+                   velocityUnits::pct);
       IntakeOne.stop();
       IntakeTwo.stop();
-
     }
     if (PuppetMaster.ButtonA.pressing()) {
       IntakeOne.spin(directionType::fwd, 97, velocityUnits::pct);
@@ -1059,7 +1057,6 @@ void usercontrol(void) {
       ArmL.spin(directionType::fwd, 33, velocityUnits::pct);
       ArmR.spin(directionType::fwd, 33, velocityUnits::pct);
     }
-    
 
     /*
     if (suck == true) {

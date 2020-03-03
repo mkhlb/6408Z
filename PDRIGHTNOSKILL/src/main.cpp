@@ -1202,7 +1202,7 @@ void autonomous(void) {
   task::sleep(50);
 
   // PIDSide(270, 3, 2.2, 3.3, 0.1, 0.2, 6, 20, 30, 100);
-  PIDSideDriveForward(91, 21.9, 7.7, 0.4, 1.68, 0.1, 0.9, 8.2, 4, 20, 88);
+  PIDSideDriveForward(91, 21.9, 7.7, 0.4, 1.68, 0.1, 0.9, 8.2, 5, 20, 88);
   //PIDSideDriveForward(TARGET_ROTATION, TARGET_Y, TARGET_X, kZ, kP, kI, kD, ACCEPTABLE_ERROR, TARGET_TICKS, MAX_I, MAX_SPEED)
   PuppetMaster.Screen.clearLine();
   PuppetMaster.Screen.print("ayyy");
@@ -1434,24 +1434,8 @@ double kE = 0.84;
       boinging = false;
     }
     else if (PuppetMaster.ButtonY.pressing()) {
-      preciseSpeedY += 20.2;
-      if(ArmL.rotation(rotationUnits::rev) > -0.035)
-      {
-        ArmL.startSpinTo(-0.211, rotationUnits::rev, 45.6, velocityUnits::pct);
-        ArmR.startSpinTo(-0.211, rotationUnits::rev, 45.6, velocityUnits::pct);
-      }
-      else if(ArmL.rotation(rotationUnits::rev) < -0.206)
-      {
-        ArmL.startSpinTo(-0.03, rotationUnits::rev, 22.5, velocityUnits::pct);
-        ArmR.startSpinTo(-0.03, rotationUnits::rev, 22.5, velocityUnits::pct);
-      }
-      else if(boinging == false)
-      {
-        ArmL.startSpinTo(-0.211, rotationUnits::rev, 45.6, velocityUnits::pct);
-        ArmR.startSpinTo(-0.211, rotationUnits::rev, 45.6, velocityUnits::pct);
-        boinging = true;
-      }
-    } 
+      speedMultiplier = 1.1;
+    }
     else {
       if(leftOffset > ACCEPTABLE_OFFSET_ERROR || -leftOffset < -ACCEPTABLE_OFFSET_ERROR)
       {
